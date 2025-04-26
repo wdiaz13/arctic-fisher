@@ -1,0 +1,13 @@
+# Ignore system files
+.DS_Store
+
+# Ignore backup files
+*~
+
+# Ignore Love2D save files
+savegame/
+
+# Ignore build artifacts
+*.zip
+*.exe
+*.app
