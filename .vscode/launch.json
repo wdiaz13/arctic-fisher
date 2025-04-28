@@ -1,0 +1,11 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Love2D",
+            "type": "love2d",
+            "request": "launch",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
