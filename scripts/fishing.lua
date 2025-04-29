@@ -1,0 +1,220 @@
+-- scripts/fishing.lua
+local gamedata = require("scripts.gamedata")
+
+local fishing = {}
+
+-- Fishing States
+local state = "idle" -- 'idle', 'dropping', 'waiting', 'bite', 'reeling', 'caught', 'missed'
+
+-- Line Properties
+local depth = 0
+local maxDepth = 1.0
+local dropSpeed = 0.2
+local reelSpeed = 0.2
+
+-- Timers
+local biteTimer = 0
+local fishOnTimer = 0
+local missTimer = 0
+local inventoryPopupTimer = 0
+local rippleTimer = 0
+local moneyPopTimer = 0
+local moneyPopDuration = 0.5
+local depthShakeTimer = 0
+local depthShakeDuration = 0.25
+local depthShakeStrength = 1.5
+
+-- Inputs
+local isHoldingDrop = false
+local isHoldingReel = false
+
+-- Inventory and Catch
+local caughtFish = nil
+local message = "Click and hold to drop your line!"
+
+function fishing.load()
+end
+
+function fishing.update(dt)
+    if fishing.isInventoryFull() then
+        inventoryPopupTimer = inventoryPopupTimer - dt
+        if inventoryPopupTimer <= 0 then
+            inventoryPopupTimer = 0
+        end
+    end
+
+    if isHoldingDrop and state == "idle" then
+        state = "dropping"
+        message = "Dropping the line..."
+    end
+
+    if isHoldingDrop and (state == "dropping" or state == "waiting") then
+        depth = math.min(depth + dropSpeed * dt, maxDepth)
+    elseif isHoldingReel and (state == "waiting" or state == "bite" or state == "reeling") then
+        depth = math.max(depth - reelSpeed * dt, 0)
+    end
+
+    if state == "dropping" and depth >= maxDepth then
+        depth = maxDepth
+        depthShakeTimer = depthShakeDuration
+        fishing.startWaiting()
+    elseif state == "waiting" then
+        biteTimer = biteTimer - dt
+        if biteTimer <= 0 and depth > 0.5 then
+            state = "bite"
+            fishOnTimer = 2
+            rippleTimer = 0
+            message = "Bite! Reel it in!"
+        end
+    elseif state == "bite" then
+        fishOnTimer = fishOnTimer - dt
+        rippleTimer = rippleTimer + dt
+        if fishOnTimer <= 0 then
+            message = "The fish got away!"
+            fishing.startWaiting()
+        end
+    elseif state == "reeling" and depth <= 0 then
+        depth = 0
+        fishing.finalizeCatch()
+    elseif state == "missed" then
+        missTimer = missTimer - dt
+        if missTimer <= 0 then
+            if depth >= 0.5 then
+                fishing.startWaiting()
+            else
+                state = "idle"
+                message = "Click and hold to drop your line!"
+            end
+        end
+    end
+
+    if depth <= 0 and not caughtFish and (not isHoldingDrop and not isHoldingReel) and state ~= "reeling" then
+        state = "idle"
+        message = "Click and hold to drop your line!"
+    end
+
+    if moneyPopTimer > 0 then
+        moneyPopTimer = moneyPopTimer - dt
+    end
+
+    if depthShakeTimer > 0 then
+        depthShakeTimer = depthShakeTimer - dt
+        if depthShakeTimer < 0 then
+            depthShakeTimer = 0
+        end
+    end
+    gamedata.state = state
+    gamedata.rippleTimer = rippleTimer
+    gamedata.depthShakeTimer = depthShakeTimer
+    gamedata.depthShakeStrength = depthShakeStrength
+    gamedata.moneyPopTimer = moneyPopTimer
+    gamedata.moneyPopDuration = moneyPopDuration
+end
+
+function fishing.draw()
+    -- draw fishing elements if needed, moved to UI module
+end
+
+function fishing.mousepressed(x, y, button)
+    if button == 1 then
+        if state == "caught" or state == "missed" then
+            caughtFish = nil
+            message = "Dropping the line..."
+            depth = 0
+            isHoldingDrop = true
+            state = "dropping"
+        else
+            isHoldingDrop = true
+        end
+    elseif button == 2 then
+        isHoldingReel = true
+        if state == "bite" then
+            state = "reeling"
+            message = "Reeling in!"
+        end
+    end
+end
+
+function fishing.mousereleased(x, y, button)
+    if button == 1 then
+        isHoldingDrop = false
+        if depth >= 0.5 and state == "dropping" then
+            fishing.startWaiting()
+        end
+    elseif button == 2 then
+        isHoldingReel = false
+        if state == "reeling" and depth > 0 then
+            state = "missed"
+            missTimer = 2
+            message = "The fish slipped away!"
+            caughtFish = nil
+        end
+    end
+end
+
+function fishing.startWaiting()
+    biteTimer = math.random(2, 5)
+    state = "waiting"
+    message = "Waiting for a bite..."
+end
+
+function fishing.finalizeCatch()
+    if state == "reeling" then
+        if gamedata.iceChest and #gamedata.iceChest >= 6 then
+            inventoryPopupTimer = 2
+            message = "Inventory Full!"
+            state = "waiting"
+            return
+        end
+
+        local roll = math.random()
+        local cumulative = 0
+        for _, fish in ipairs(gamedata.fishTypes or {}) do
+            cumulative = cumulative + fish.chance
+            if roll <= cumulative then
+                local weight = math.random() * (fish.maxWeight - fish.minWeight) + fish.minWeight
+                caughtFish = string.format("Caught a %.1fkg %s!", weight, fish.name)
+                table.insert(gamedata.iceChest, {name = fish.name, weight = weight, selected = false})
+                message = "Nice catch!"
+                state = "caught"
+                return
+            end
+        end
+
+        caughtFish = "Caught a mystery fish!"
+        message = "You caught something!"
+        state = "caught"
+    end
+end
+
+-- Getter functions for UI
+function fishing.getDepth()
+    return depth
+end
+
+function fishing.getMessage()
+    return message
+end
+
+function fishing.getMoney()
+    return gamedata.money or 0
+end
+
+function fishing.getCaughtFish()
+    return caughtFish
+end
+
+function fishing.isInventoryFull()
+    return inventoryPopupTimer > 0
+end
+
+function fishing.increaseMaxDepth(amount)
+    maxDepth = maxDepth + (amount or 1)
+end
+
+function fishing.increaseReelSpeed(factor)
+    dropSpeed = dropSpeed * (factor or 2)
+    reelSpeed = reelSpeed * (factor or 2)
+end
+
+return fishing
