@@ -8,6 +8,8 @@ local shop = require("scripts.shop")
 function love.load()
     love.window.setMode(600, 900)
     love.window.setTitle("Arctic Fisher")
+    math.randomseed(os.time()) -- Seed the RNG with the current time
+    math.random(); math.random(); math.random() -- Warm up the RNG
     ui.loadFonts()
     ui.initFish()
     fishing.load()

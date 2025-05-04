@@ -4,6 +4,7 @@ local gamedata = require("scripts.gamedata")
 local ui = {}
 
 local schoolFish = {}
+local snowParticles = {}
 
 local defaultFont
 local signFont
@@ -15,31 +16,62 @@ function ui.loadFonts()
 end
 
 function ui.initFish()
+
     for i = 1, 10 do
-        local yPos = math.random(200, 800) -- Random y position for fish
+        local yPos = math.random(250, 750) -- random y position for each fish
         table.insert(schoolFish, {
-            x = math.random(-100, 600), -- Random x position off-screen
-            y = yPos, 
-            originalY = yPos, -- Store original y position
-            speed = math.random(20, 40), -- Random speed
-            direction = math.random(0, 1) == 0 and -1 or 1, -- Random direction (left or right)
+            x = math.random(-100, 600),-- random x position
+            y = yPos, -- random y position
+            originalY = yPos, -- store original y position for depth
+            speed = math.random(20, 40), -- random speed
+            direction = math.random(0, 1) == 0 and -1 or 1, -- random direction
+            color = (math.random() < 0.1) and {.5, 0.2, 0.2} or {0.2, 0.3, 0.4}
         })
     end
 end
 
+local function spawnSnowflake()
+    table.insert(snowParticles, {
+        x = math.random(0, 600),
+        y = -10,
+        speedY = math.random(20, 40),
+        drift = math.random(-10, 10), -- wind drift left/right
+        alpha = 1 -- opacity full
+    })
+end
 
 function ui.update(dt)
+    -- schoolFish movement
     for _, fish in ipairs(schoolFish) do
         fish.x = fish.x + fish.speed * fish.direction * dt
 
         if fish.direction == 1 and fish.x > 650 then
             fish.x = -50
-            fish.y = fish.originalY -- 🧊 restore original depth
+            fish.y = fish.originalY --restore original depth
         elseif fish.direction == -1 and fish.x < -50 then
             fish.x = 650
             fish.y = fish.originalY
         end
     end
+    -- snowflake spawning
+    for i = #snowParticles, 1, -1 do
+        local p = snowParticles[i]
+        p.x = p.x + p.drift * dt
+        p.y = p.y + p.speedY * dt
+    
+        -- If it hits the ice layer, remove it
+        if p.y > 50 then
+            table.remove(snowParticles, i)
+        end
+    end
+    -- snowflake spawn timer
+    ui.snowSpawnTimer = (ui.snowSpawnTimer or 0) - dt
+    if ui.snowSpawnTimer <= 0 then
+    spawnSnowflake()
+    ui.snowSpawnTimer = 0.05 -- tweak this for faster/slower snow
+end
+    
+    
 end
 
 
@@ -47,6 +79,12 @@ function ui.drawBackground()
     -- Arctic Horizon
     love.graphics.setColor(0.7, 0.9, 1.0)
     love.graphics.rectangle("fill", 0, 0, 600, 50)
+
+    -- snowflakes
+    for _, p in ipairs(snowParticles) do
+        love.graphics.setColor(1, 1, 1, p.alpha)
+        love.graphics.rectangle("fill", p.x, p.y, 2, 2) -- flake size
+    end    
 
     -- Water Gradient
     for y = 50, 900 do
@@ -59,9 +97,10 @@ function ui.drawBackground()
     end
 
     for _, fish in ipairs(schoolFish) do
-        love.graphics.setColor(0.2, 0.3, 0.4) -- gray/blue little fish
-        love.graphics.rectangle("fill", fish.x, fish.y, 5, 2) -- tiny rectangle pixel fish
+        love.graphics.setColor(fish.color)
+        love.graphics.rectangle("fill", fish.x, fish.y, 5, 2)
     end    
+     
 
     -- Ice
     love.graphics.setColor(0.7, 0.7, 0.7)
