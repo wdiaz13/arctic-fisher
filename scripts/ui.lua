@@ -3,6 +3,8 @@ local gamedata = require("scripts.gamedata")
 
 local ui = {}
 
+local schoolFish = {}
+
 local defaultFont
 local signFont
 
@@ -11,6 +13,35 @@ function ui.loadFonts()
     signFont = love.graphics.newFont(28)
     love.graphics.setFont(defaultFont)
 end
+
+function ui.initFish()
+    for i = 1, 10 do
+        local yPos = math.random(200, 800) -- Random y position for fish
+        table.insert(schoolFish, {
+            x = math.random(-100, 600), -- Random x position off-screen
+            y = yPos, 
+            originalY = yPos, -- Store original y position
+            speed = math.random(20, 40), -- Random speed
+            direction = math.random(0, 1) == 0 and -1 or 1, -- Random direction (left or right)
+        })
+    end
+end
+
+
+function ui.update(dt)
+    for _, fish in ipairs(schoolFish) do
+        fish.x = fish.x + fish.speed * fish.direction * dt
+
+        if fish.direction == 1 and fish.x > 650 then
+            fish.x = -50
+            fish.y = fish.originalY -- 🧊 restore original depth
+        elseif fish.direction == -1 and fish.x < -50 then
+            fish.x = 650
+            fish.y = fish.originalY
+        end
+    end
+end
+
 
 function ui.drawBackground()
     -- Arctic Horizon
@@ -26,6 +57,11 @@ function ui.drawBackground()
         love.graphics.setColor(r, g, b)
         love.graphics.rectangle("fill", 0, y, 600, 1)
     end
+
+    for _, fish in ipairs(schoolFish) do
+        love.graphics.setColor(0.2, 0.3, 0.4) -- gray/blue little fish
+        love.graphics.rectangle("fill", fish.x, fish.y, 5, 2) -- tiny rectangle pixel fish
+    end    
 
     -- Ice
     love.graphics.setColor(0.7, 0.7, 0.7)

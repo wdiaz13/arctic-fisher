@@ -9,6 +9,7 @@ function love.load()
     love.window.setMode(600, 900)
     love.window.setTitle("Arctic Fisher")
     ui.loadFonts()
+    ui.initFish()
     fishing.load()
 end
 
@@ -17,7 +18,7 @@ function love.update(dt)
         -- Don't update fishing gameplay when viewing inventory/shop
         return
     end
-
+    ui.update(dt)
     fishing.update(dt)
     fishdex.update(dt)
 end

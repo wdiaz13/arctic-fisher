@@ -23,7 +23,7 @@ end
 
 local function getReelUpgradePrice()
     --(doubles each time)
-    return 75 * (2 ^ reelUpgradeLevel)
+    return 25 * (2 ^ reelUpgradeLevel)
 end
 
 local function getRodUpgradePrice()
