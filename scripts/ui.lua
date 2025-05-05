@@ -119,7 +119,7 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
     -- Fishing Line
     local lineLength = (depth / 1.0) * 170
     love.graphics.setColor(1, 1, 1)
-    love.graphics.setLineWidth(2)
+    love.graphics.setLineWidth(1)
     love.graphics.line(300, 50, 300, 50 + lineLength)
 
     -- Ripple Effect (if in bite state)
@@ -129,14 +129,14 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
         local rippleRadius = 10 + (gamedata.rippleTimer * 50) % 50
 
         love.graphics.setColor(0, 0.6, 1)
-        love.graphics.circle("fill", centerX, centerY, 5)
+        love.graphics.circle("fill", centerX, centerY, 3.5)
 
-        love.graphics.setColor(0, 0.6, 1, 1 - (rippleRadius / 50))
-        love.graphics.setLineWidth(2)
+        love.graphics.setColor(0, 0.6, 1, 1 - (rippleRadius / 35))
+        love.graphics.setLineWidth(1)
         love.graphics.circle("line", centerX, centerY, rippleRadius)
     end
 
-    -- Money Pop Effect
+    -- Money Pop Effect (not working yet)
     local popScale = 1.0
     if gamedata.moneyPopTimer and gamedata.moneyPopTimer > 0 then
         popScale = 1.0 + 0.5 * (gamedata.moneyPopTimer / gamedata.moneyPopDuration)
