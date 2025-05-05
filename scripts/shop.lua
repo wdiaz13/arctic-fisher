@@ -9,7 +9,7 @@ local viewingShop = false
 local upgrades = {
     {name = "Line+ Upgrade", price = 5, purchased = false},
     {name = "Reel Upgrade", price = 25, purchased = false},
-    {name = "Rod Upgrade", price = 100, purchased = false},
+    {name = "Rod Upgrade", price = 60, purchased = false},
 }
 
 local lineUpgradeLevel = 0
@@ -78,7 +78,7 @@ for i = 0, 2 do
     local x = 50 + gap + i * (slotWidth + gap)
     local y = 680
 
-    local upgrade = upgrades[i + 1] -- 💥 THIS IS MISSING!!
+    local upgrade = upgrades[i + 1] 
 
     local mx, my = love.mouse.getPosition()
     local hover = mx >= x and mx <= x + slotWidth and my >= y and my <= y + 100
@@ -126,31 +126,36 @@ function shop.mousepressed(x, y, button)
     local gap = (500 - (slotWidth * 3)) / 4
 
     for i = 0, 2 do
-        local upgrade = upgrades[i + 1]
         local slotX = 50 + gap + i * (slotWidth + gap)
         local slotY = 680
 
-        if upgrade.name == "Line+ Upgrade" then
-            local price = getLineUpgradePrice()
-            if gamedata.money >= price then
-                gamedata.money = gamedata.money - price
-                fishing.increaseMaxDepth(1)
-                lineUpgradeLevel = lineUpgradeLevel + 1
+        if x >= slotX and x <= slotX + slotWidth and y >= slotY and y <= slotY + 100 then
+            -- Which upgrade?
+            if i == 0 then -- Line Upgrade
+                local price = getLineUpgradePrice()
+                if gamedata.money >= price then
+                    gamedata.money = gamedata.money - price
+                    lineUpgradeLevel = lineUpgradeLevel + 1
+                    fishing.setMaxDepth(1 + lineUpgradeLevel)
+                end
+            elseif i == 1 then -- Reel Upgrade
+                local price = getReelUpgradePrice()
+                if gamedata.money >= price then
+                    gamedata.money = gamedata.money - price
+                    reelUpgradeLevel = reelUpgradeLevel + 1
+                    fishing.increaseReelSpeed(2) -- double it each time
+                end
+            
+            elseif i == 2 then -- Rod Upgrade
+                local price = getRodUpgradePrice()
+                if gamedata.money >= price then
+                    gamedata.money = gamedata.money - price
+                    rodUpgradeLevel = rodUpgradeLevel + 1
+                    
+                    -- Future: Add rod upgrade effects
+                end
             end
-        elseif upgrade.name == "Reel Upgrade" then
-            local price = getReelUpgradePrice()
-            if gamedata.money >= price then
-                gamedata.money = gamedata.money - price
-                fishing.increaseReelSpeed(2)
-                reelUpgradeLevel = reelUpgradeLevel + 1
-            end
-        else
-            if not upgrade.purchased and gamedata.money >= upgrade.price then
-                gamedata.money = gamedata.money - upgrade.price
-                upgrade.purchased = true
-                -- Future: apply Rod Upgrade effects
-            end
-        end        
+        end
     end
 end
 
