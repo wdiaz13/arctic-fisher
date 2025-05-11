@@ -3,14 +3,6 @@ local gamedata = require("scripts.gamedata")
 
 local fishdex = {}
 
--- Fish Data
-gamedata.fishTypes = {
-    {name = "Arctic Char", chance = 0.45, minWeight = 2.3, maxWeight = 4.5},
-    {name = "Capelin", chance = 0.25, minWeight = 6.5, maxWeight = 11.0},
-    {name = "Polar Cod", chance = 0.20, minWeight = 9.5, maxWeight = 16.5},
-    {name = "Halibut", chance = 0.10, minWeight = 13.5, maxWeight = 40.0}
-}
-
 gamedata.iceChest = {}
 
 local viewingChest = false
@@ -166,13 +158,17 @@ end
 
 function fishdex.calculateFishValue(name, weight)
     if name == "Arctic Char" then
-        return 1.20 + 0.01 * weight
+        return 9.20 + 0.01 * weight
     elseif name == "Capelin" then
-        return 1.40 + 0.01 * weight
+        return 9.40 + 0.01 * weight
     elseif name == "Polar Cod" then
         return 3.20 + 0.01 * weight
     elseif name == "Halibut" then
         return 5.50 + 0.01 * weight
+    elseif name == "Icefang Haddock" then
+        return 6.5 + 0.02 * weight
+    elseif name == "Pink Ice Salmon" then
+        return 8.0 + 0.03 * weight    
     else
         return 0
     end

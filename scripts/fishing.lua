@@ -49,18 +49,18 @@ function fishing.update(dt)
     end
 
     if isHoldingDrop and (state == "dropping" or state == "waiting") then
-        depth = math.min(depth + dropSpeed * dt, maxDepth)
+        gamedata.depth = math.min(gamedata.depth + dropSpeed * dt, maxDepth)
     elseif isHoldingReel and (state == "waiting" or state == "bite" or state == "reeling") then
-        depth = math.max(depth - reelSpeed * dt, 0)
+        gamedata.depth = math.max(gamedata.depth - reelSpeed * dt, 0)
     end
 
-    if state == "dropping" and depth >= maxDepth then
-        depth = maxDepth
+    if state == "dropping" and gamedata.depth >= maxDepth then
+        gamedata.depth = maxDepth
         depthShakeTimer = depthShakeDuration
         fishing.startWaiting()
     elseif state == "waiting" then
         biteTimer = biteTimer - dt
-        if biteTimer <= 0 and depth > 0.5 then
+        if biteTimer <= 0 and gamedata.depth > 0.5 then
             state = "bite"
             fishOnTimer = 2
             rippleTimer = 0
@@ -73,13 +73,13 @@ function fishing.update(dt)
             message = "The fish got away!"
             fishing.startWaiting()
         end
-    elseif state == "reeling" and depth <= 0 then
-        depth = 0
+    elseif state == "reeling" and gamedata.depth <= 0 then
+        gamedata.depth = 0
         fishing.finalizeCatch()
     elseif state == "missed" then
         missTimer = missTimer - dt
         if missTimer <= 0 then
-            if depth >= 0.5 then
+            if gamedata.depth >= 0.5 then
                 fishing.startWaiting()
             else
                 state = "idle"
@@ -88,7 +88,7 @@ function fishing.update(dt)
         end
     end
 
-    if depth <= 0 and not caughtFish and (not isHoldingDrop and not isHoldingReel) and state ~= "reeling" then
+    if gamedata.depth <= 0 and not caughtFish and (not isHoldingDrop and not isHoldingReel) and state ~= "reeling" then
         state = "idle"
         message = "Click and hold to drop your line!"
     end
@@ -120,7 +120,7 @@ function fishing.mousepressed(x, y, button)
         if state == "caught" or state == "missed" then
             caughtFish = nil
             message = "Dropping the line..."
-            depth = 0
+            gamedata.depth = 0
             isHoldingDrop = true
             state = "dropping"
         else
@@ -138,7 +138,7 @@ end
 function fishing.mousereleased(x, y, button)
     if button == 1 then
         isHoldingDrop = false
-        if depth >= 0.5 and state == "dropping" then
+        if gamedata.depth >= 0.5 and state == "dropping" then
             fishing.startWaiting()
         end
     elseif button == 2 then
@@ -159,37 +159,59 @@ function fishing.startWaiting()
 end
 
 function fishing.finalizeCatch()
-    if state == "reeling" then
-        if gamedata.iceChest and #gamedata.iceChest >= 6 then
-            inventoryPopupTimer = 2
-            message = "Inventory Full!"
-            state = "waiting"
+    if state ~= "reeling" then return end
+
+    if gamedata.iceChest and #gamedata.iceChest >= 6 then
+        inventoryPopupTimer = 2
+        message = "Inventory Full!"
+        state = "waiting"
+        return
+    end
+
+    local depth = gamedata.depth
+    local selectedPool = nil
+
+    for _, zone in pairs(gamedata.fishPools) do
+        if zone.minDepth and zone.maxDepth and depth >= zone.minDepth and depth <= zone.maxDepth then
+            selectedPool = zone
+            break
+        end
+    end
+
+    if not selectedPool then
+        print("❌ No valid zone found for depth:", depth)
+        message = "Nothing biting here..."
+        state = "waiting"
+        return
+    end
+
+    print("🎣 Using zone:", selectedPool.name, "at depth", depth)
+
+    local roll = math.random()
+    local cumulative = 0
+
+    for _, fish in ipairs(selectedPool.fish) do
+        cumulative = cumulative + fish.chance
+        if roll <= cumulative then
+            local weight = math.random() * (fish.maxWeight - fish.minWeight) + fish.minWeight
+            caughtFish = string.format("Caught a %.1fkg %s!", weight, fish.name)
+            table.insert(gamedata.iceChest, {name = fish.name, weight = weight, selected = false})
+            message = "Nice catch!"
+            state = "caught"
             return
         end
-
-        local roll = math.random()
-        local cumulative = 0
-        for _, fish in ipairs(gamedata.fishTypes or {}) do
-            cumulative = cumulative + fish.chance
-            if roll <= cumulative then
-                local weight = math.random() * (fish.maxWeight - fish.minWeight) + fish.minWeight
-                caughtFish = string.format("Caught a %.1fkg %s!", weight, fish.name)
-                table.insert(gamedata.iceChest, {name = fish.name, weight = weight, selected = false})
-                message = "Nice catch!"
-                state = "caught"
-                return
-            end
-        end
-
-        caughtFish = "Caught a mystery fish!"
-        message = "You caught something!"
-        state = "caught"
     end
+
+    -- fallback
+    caughtFish = "Caught a mystery fish!"
+    message = "You caught something!"
+    state = "caught"
 end
+
 
 -- Getter functions for UI
 function fishing.getDepth()
-    return depth
+    return gamedata.depth
 end
 
 function fishing.getMessage()

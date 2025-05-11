@@ -136,7 +136,7 @@ function shop.mousepressed(x, y, button)
                 if gamedata.money >= price then
                     gamedata.money = gamedata.money - price
                     lineUpgradeLevel = lineUpgradeLevel + 1
-                    fishing.setMaxDepth(1 + lineUpgradeLevel)
+                    fishing.increaseMaxDepth(1)
                 end
             elseif i == 1 then -- Reel Upgrade
                 local price = getReelUpgradePrice()

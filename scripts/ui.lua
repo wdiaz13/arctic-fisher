@@ -40,6 +40,18 @@ local function spawnSnowflake()
     })
 end
 
+-- Function to get the current zone based on depth
+local function getCurrentZone()
+    local depth = gamedata.depth
+    for _, zone in pairs(gamedata.fishPools) do
+        if zone.minDepth and zone.maxDepth and depth >= zone.minDepth and depth <= zone.maxDepth then
+            return zone.name
+        end
+    end
+    return "Unknown Zone"
+end
+
+
 function ui.update(dt)
     -- schoolFish movement
     for _, fish in ipairs(schoolFish) do
@@ -117,7 +129,7 @@ end
 
 function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
     -- Fishing Line
-    local lineLength = (depth / 1.0) * 170
+    local lineLength = (gamedata.depth / 1.0) * 170
     love.graphics.setColor(1, 1, 1)
     love.graphics.setLineWidth(1)
     love.graphics.line(300, 50, 300, 50 + lineLength)
@@ -167,7 +179,7 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
 
     -- Shadow
     love.graphics.setColor(0, 0, 0.1)
-    love.graphics.print(string.format("Depth: %.1fm", depth), depthX + 1, depthY + 1)
+    love.graphics.print(string.format("Depth: %.1fm", gamedata.depth), depthX + 1, depthY + 1)
 
     -- Main Text
     if gamedata.depthShakeTimer and gamedata.depthShakeTimer > 0 then
@@ -175,7 +187,7 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
     else
         love.graphics.setColor(1, 1, 1)
     end
-    love.graphics.print(string.format("Depth: %.1fm", depth), depthX, depthY)
+    love.graphics.print(string.format("Depth: %.1fm", gamedata.depth), depthX, depthY)
 
     -- Reset color
     love.graphics.setColor(1, 1, 1)
@@ -205,6 +217,11 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
     love.graphics.print("'P' open Trading Post", 447, 31)
     love.graphics.setColor(1, 1, 1)
     love.graphics.print("'P' open Trading Post", 446, 30)
+
+    -- Zone indicator text
+    local zoneName = getCurrentZone()
+    love.graphics.setColor(0.2, 0.3, 0.5) 
+    love.graphics.printf("Zone: " .. zoneName, 10, 860, 200, "left")
 end
 
 return ui
