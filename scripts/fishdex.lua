@@ -158,13 +158,13 @@ end
 
 function fishdex.calculateFishValue(name, weight)
     if name == "Arctic Char" then
-        return 9.20 + 0.01 * weight
+        return 2.20 + 0.01 * weight
     elseif name == "Capelin" then
-        return 9.40 + 0.01 * weight
+        return 3.40 + 0.01 * weight
     elseif name == "Polar Cod" then
-        return 3.20 + 0.01 * weight
+        return 4.20 + 0.01 * weight
     elseif name == "Halibut" then
-        return 5.50 + 0.01 * weight
+        return 9.50 + 0.01 * weight
     elseif name == "Icefang Haddock" then
         return 6.5 + 0.02 * weight
     elseif name == "Pink Ice Salmon" then

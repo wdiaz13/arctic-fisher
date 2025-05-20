@@ -179,7 +179,7 @@ function fishing.finalizeCatch()
     end
 
     if not selectedPool then
-        print("❌ No valid zone found for depth:", depth)
+        print("No valid zone found for depth:", depth)
         message = "Nothing biting here..."
         state = "waiting"
         return
