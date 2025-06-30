@@ -4,6 +4,8 @@ local sources = {}
 
 function sound.load()
     sources["fishOn"] = love.audio.newSource("assets/sounds/fish_on.wav", "static")
+    sources["maxDepth"] = love.audio.newSource("assets/sounds/max_depth.wav", "static")
+    sources["fishSurface"] = love.audio.newSource("assets/sounds/fish_surface.wav", "static")
     -- Add more sounds here
 end
 

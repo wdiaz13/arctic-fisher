@@ -57,6 +57,7 @@ function fishing.update(dt)
 
     if state == "dropping" and gamedata.depth >= maxDepth then
         gamedata.depth = maxDepth
+        sound.play("maxDepth")
         depthShakeTimer = depthShakeDuration
         fishing.startWaiting()
     elseif state == "waiting" then
@@ -173,7 +174,7 @@ function fishing.finalizeCatch()
     local depth = gamedata.depth
     local selectedPool = nil
 
-    for _, zone in pairs(gamedata.fishPools) do
+    for _, zone in ipairs(gamedata.fishPools) do
         if zone.minDepth and zone.maxDepth and depth >= zone.minDepth and depth <= zone.maxDepth then
             selectedPool = zone
             break
@@ -198,6 +199,7 @@ function fishing.finalizeCatch()
             local weight = math.random() * (fish.maxWeight - fish.minWeight) + fish.minWeight
             caughtFish = string.format("Caught a %.1fkg %s!", weight, fish.name)
             table.insert(gamedata.iceChest, {name = fish.name, weight = weight, selected = false})
+            sound.play("fishSurface")
             message = "Nice catch!"
             state = "caught"
             return

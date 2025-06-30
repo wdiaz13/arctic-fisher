@@ -6,7 +6,7 @@ local gamedata = {
     fishPools = {
     {
         name = "Subglacial Zone",
-        minDepth = 2.01,
+        minDepth = 2.00,
         maxDepth = 5.0,
         fish = {
             {name = "Polar Cod", chance = 0.2, minWeight = 9.5, maxWeight = 16.5},
@@ -21,7 +21,7 @@ local gamedata = {
         maxDepth = 2.0,
         fish = {
             {name = "Arctic Char", chance = 0.4, minWeight = 2.3, maxWeight = 4.5},
-            {name = "Capelin", chance = 0.25, minWeight = 6.5, maxWeight = 11.0},
+            {name = "Capelin", chance = 0.3, minWeight = 6.5, maxWeight = 11.0},
             {name = "Polar Cod", chance = 0.2, minWeight = 9.5, maxWeight = 16.5},
             {name = "Halibut", chance = 0.1, minWeight = 13.5, maxWeight = 40.0}
         }
