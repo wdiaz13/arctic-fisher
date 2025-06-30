@@ -4,6 +4,7 @@ local fishing = require("scripts.fishing")
 local fishdex = require("scripts.fishdex")
 local ui = require("scripts.ui")
 local shop = require("scripts.shop")
+local sound = require("scripts.sound")
 
 function love.load()
     love.window.setMode(600, 900)
@@ -13,6 +14,8 @@ function love.load()
     ui.loadFonts()
     ui.initFish()
     fishing.load()
+    sound.load()
+
 end
 
 function love.update(dt)

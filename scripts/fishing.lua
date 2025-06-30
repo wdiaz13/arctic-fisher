@@ -1,5 +1,6 @@
 -- scripts/fishing.lua
 local gamedata = require("scripts.gamedata")
+local sound = require("scripts.sound")
 
 local fishing = {}
 
@@ -65,6 +66,7 @@ function fishing.update(dt)
             fishOnTimer = 2
             rippleTimer = 0
             message = "Bite! Reel it in!"
+            sound.play("fishOn")
         end
     elseif state == "bite" then
         fishOnTimer = fishOnTimer - dt
@@ -143,7 +145,7 @@ function fishing.mousereleased(x, y, button)
         end
     elseif button == 2 then
         isHoldingReel = false
-        if state == "reeling" and depth > 0 then
+        if state == "reeling" and gamedata.depth > 0 then
             state = "missed"
             missTimer = 2
             message = "The fish slipped away!"
