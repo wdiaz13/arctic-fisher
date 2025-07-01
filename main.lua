@@ -15,6 +15,7 @@ function love.load()
     ui.initFish()
     fishing.load()
     sound.load()
+    sound.play("ambientSurface")
 
 end
 
