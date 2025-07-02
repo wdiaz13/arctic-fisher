@@ -148,6 +148,7 @@ function fishing.mousereleased(x, y, button)
         isHoldingReel = false
         if state == "reeling" and gamedata.depth > 0 then
             state = "missed"
+            sound.play("slippedAway")
             missTimer = 2
             message = "The fish slipped away!"
             caughtFish = nil

@@ -32,10 +32,10 @@ end
 
 local function spawnSnowflake()
     table.insert(snowParticles, {
-        x = math.random(0, 600),
+        x = math.random(-100, 600),
         y = -10,
-        speedY = math.random(20, 40),
-        drift = math.random(-10, 10), -- wind drift left/right
+        speedY = math.random(40, 70),
+        drift = math.random(30, 60), -- wind drift left/right
         alpha = 1 -- opacity full
     })
 end
@@ -222,6 +222,10 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
     local zoneName = getCurrentZone()
     love.graphics.setColor(0.2, 0.3, 0.5) 
     love.graphics.printf("Zone: " .. zoneName, 10, 860, 200, "left")
+end
+
+function ui.getDefaultFont()
+    return defaultFont
 end
 
 return ui

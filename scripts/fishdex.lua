@@ -1,5 +1,6 @@
 -- scripts/fishdex.lua
 local gamedata = require("scripts.gamedata")
+local sound = require("scripts.sound")
 
 local fishdex = {}
 
@@ -127,6 +128,8 @@ function fishdex.mousepressed(x, y, button)
             gamedata.iceChest = newIceChest
             gamedata.money = (gamedata.money or 0) + total
             gamedata.moneyPopTimer = gamedata.moneyPopDuration or 0.5
+
+            sound.playRandom("sell")
             return
         end
     end
@@ -142,6 +145,7 @@ function fishdex.mousepressed(x, y, button)
             local fish = gamedata.iceChest[i]
             if fish then
                 fish.selected = not fish.selected
+                sound.playRandom("select")
             end
         end
     end

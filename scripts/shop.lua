@@ -1,6 +1,7 @@
 -- scripts/shop.lua
 local gamedata = require("scripts.gamedata")
-local fishing = require("scripts.fishing") --modify maxdepth
+local fishing = require("scripts.fishing") -- modify maxdepth
+local sound = require("scripts.sound")
 
 local shop = {}
 
@@ -137,6 +138,7 @@ function shop.mousepressed(x, y, button)
                     gamedata.money = gamedata.money - price
                     lineUpgradeLevel = lineUpgradeLevel + 1
                     fishing.increaseMaxDepth(1)
+                    sound.play("lineUpgrade")
                 end
             elseif i == 1 then -- Reel Upgrade
                 local price = getReelUpgradePrice()
@@ -144,6 +146,7 @@ function shop.mousepressed(x, y, button)
                     gamedata.money = gamedata.money - price
                     reelUpgradeLevel = reelUpgradeLevel + 1
                     fishing.increaseReelSpeed(2) -- double it each time
+                    sound.play("reelUpgrade")
                 end
             
             elseif i == 2 then -- Rod Upgrade
@@ -151,6 +154,8 @@ function shop.mousepressed(x, y, button)
                 if gamedata.money >= price then
                     gamedata.money = gamedata.money - price
                     rodUpgradeLevel = rodUpgradeLevel + 1
+
+                    sound.play("rodUpgrade")
                     
                     -- Future: Add rod upgrade effects
                 end
