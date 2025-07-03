@@ -1,6 +1,7 @@
 -- scripts/gamedata.lua
 local gamedata = {
     money = 0,
+    displayedMoney = 0,
     iceChest = {},
     depth = 0,
     fishPools = {

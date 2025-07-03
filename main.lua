@@ -38,12 +38,11 @@ function love.load()
 end
 
 function love.update(dt)
-    if fishdex.isChestOpen() or shop.isOpen() then
-        -- Don't update fishing gameplay when viewing inventory/shop
-        return
-    end
-    ui.update(dt)
+    if not fishdex.isChestOpen() and not shop.isOpen() then
     fishing.update(dt)
+    end
+
+    ui.update(dt)
     fishdex.update(dt)
 
     -- opening tag logic

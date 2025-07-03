@@ -19,8 +19,6 @@ local fishOnTimer = 0
 local missTimer = 0
 local inventoryPopupTimer = 0
 local rippleTimer = 0
-local moneyPopTimer = 0
-local moneyPopDuration = 0.5
 local depthShakeTimer = 0
 local depthShakeDuration = 0.25
 local depthShakeStrength = 1.5
@@ -96,10 +94,6 @@ function fishing.update(dt)
         message = "Click and hold to drop your line!"
     end
 
-    if moneyPopTimer > 0 then
-        moneyPopTimer = moneyPopTimer - dt
-    end
-
     if depthShakeTimer > 0 then
         depthShakeTimer = depthShakeTimer - dt
         if depthShakeTimer < 0 then
@@ -110,8 +104,6 @@ function fishing.update(dt)
     gamedata.rippleTimer = rippleTimer
     gamedata.depthShakeTimer = depthShakeTimer
     gamedata.depthShakeStrength = depthShakeStrength
-    gamedata.moneyPopTimer = moneyPopTimer
-    gamedata.moneyPopDuration = moneyPopDuration
 end
 
 function fishing.draw()

@@ -1,6 +1,7 @@
 -- scripts/fishdex.lua
 local gamedata = require("scripts.gamedata")
 local sound = require("scripts.sound")
+local ui = require("scripts.ui") -- money access in icebox
 
 local fishdex = {}
 
@@ -100,6 +101,10 @@ function fishdex.drawChest()
     end
     love.graphics.setColor(0, 0, 0)
     love.graphics.print(string.format("Total Weight: %.1fkg", totalWeight), 190, 780)
+
+    -- Always show money while in fishdex view
+    ui.drawMoneyOverlay()
+
 end
 
 function fishdex.mousepressed(x, y, button)
@@ -127,7 +132,7 @@ function fishdex.mousepressed(x, y, button)
             end
             gamedata.iceChest = newIceChest
             gamedata.money = (gamedata.money or 0) + total
-            gamedata.moneyPopTimer = gamedata.moneyPopDuration or 0.5
+            gamedata.moneyPopTimer = gamedata.moneyPopDuration
 
             sound.playRandom("sell")
             return

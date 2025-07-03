@@ -105,6 +105,14 @@ function ui.update(dt)
     fire.time = fire.time + dt
     fire.flicker = 1 + 0.15 * math.sin(fire.time * 2)
 
+    -- Money display animation
+    local diff = gamedata.money - gamedata.displayedMoney
+    if math.abs(diff) > 0.01 then
+        gamedata.displayedMoney = gamedata.displayedMoney + diff * dt * 16
+    else
+        gamedata.displayedMoney = gamedata.money
+    end
+
 end
 
 
@@ -182,26 +190,6 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
         love.graphics.circle("line", centerX, centerY, rippleRadius)
     end
 
-    -- Money Pop Effect (not working yet)
-    local popScale = 1.0
-    if gamedata.moneyPopTimer and gamedata.moneyPopTimer > 0 then
-        popScale = 1.0 + 0.5 * (gamedata.moneyPopTimer / gamedata.moneyPopDuration)
-    end
-
-    love.graphics.push()
-    love.graphics.translate(10, 10)
-    love.graphics.scale(popScale, popScale)
-
-    -- Shadow
-    love.graphics.setColor(0, 0, 0.1)
-    love.graphics.print(string.format("$%.2f", money), 1, 1)
-
-    -- Main Money
-    love.graphics.setColor(1.0, 0.75, 0.0)
-    love.graphics.print(string.format("$%.2f", money), 0, 0)
-
-    love.graphics.pop()
-
     -- Depth Text
     local depthX = 10
     local depthY = 30
@@ -256,7 +244,23 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
     local zoneName = getCurrentZone()
     love.graphics.setColor(0.2, 0.3, 0.5) 
     love.graphics.printf(zoneName, 10, 860, 200, "left")
+
+    ui.drawMoneyOverlay() -- draw money (always on screen)
+
 end
+
+-- Money overlay in the top left corner
+function ui.drawMoneyOverlay()
+    local money = gamedata.displayedMoney or 0
+
+    love.graphics.setColor(0, 0, 0.1)
+    love.graphics.print(string.format("$%.2f", money), 11, 11)
+
+    love.graphics.setColor(1.0, 0.75, 0.0)
+    love.graphics.print(string.format("$%.2f", money), 10, 10)
+
+end
+
 
 function ui.getDefaultFont()
     return defaultFont
