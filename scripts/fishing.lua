@@ -29,6 +29,7 @@ local isHoldingReel = false
 
 -- Inventory and Catch
 local caughtFish = nil
+local biteDepth = nil
 local message = "Click and hold to drop your line!"
 
 function fishing.load()
@@ -64,6 +65,7 @@ function fishing.update(dt)
             state = "bite"
             fishOnTimer = 2
             rippleTimer = 0
+            biteDepth = gamedata.depth
             message = "Bite! Reel it in!"
             sound.play("fishOn")
         end
@@ -73,6 +75,7 @@ function fishing.update(dt)
         if fishOnTimer <= 0 then
             message = "The fish got away!"
             fishing.startWaiting()
+            biteDepth = nil -- reset bite depth
         end
     elseif state == "reeling" and gamedata.depth <= 0 then
         gamedata.depth = 0
@@ -161,13 +164,15 @@ function fishing.finalizeCatch()
         inventoryPopupTimer = 2
         message = "Inventory Full!"
         state = "waiting"
+        biteDepth = nil -- reset bite depth
         return
     end
 
-    local depth = gamedata.depth
+    local depth = biteDepth or gamedata.depth
     local selectedPool = nil
 
-    for _, zone in ipairs(gamedata.fishPools) do
+    for i = #gamedata.fishPools, 1, -1 do
+        local zone = gamedata.fishPools[i] -- reverse loop lets zones overlap slightly without causing bugs
         if zone.minDepth and zone.maxDepth and depth >= zone.minDepth and depth <= zone.maxDepth then
             selectedPool = zone
             break
