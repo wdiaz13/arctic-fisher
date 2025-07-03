@@ -45,7 +45,7 @@ local gamedata = {
         fish = {
             {name = "Arctic Char", chance = 0.4, minWeight = 2.3, maxWeight = 4.5},
             {name = "Capelin", chance = 0.3, minWeight = 6.5, maxWeight = 11.0},
-            {name = "Sunflash Smelt", chance = 0.2, minWeight = 9.5, maxWeight = 16.5},
+            {name = "Sunflash Smelt", chance = 0.2, minWeight = 0.2, maxWeight = 1.3},
             {name = "Halibut", chance = 0.1, minWeight = 13.5, maxWeight = 40.0}
         }
     }
