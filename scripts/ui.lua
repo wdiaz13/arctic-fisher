@@ -9,12 +9,25 @@ local snowParticles = {}
 local defaultFont
 local signFont
 
+-- load images
+local tentImage = love.graphics.newImage("assets/environment/tent.png")
+
+-- fire behind tent
+local fire = {
+    x = 300,  -- center behind tent
+    y = 40,
+    baseRadius = 3.5,
+    flicker = 0,
+    time = 0 
+}
+
 function ui.loadFonts()
     defaultFont = love.graphics.newFont(14)
     signFont = love.graphics.newFont(28)
     love.graphics.setFont(defaultFont)
 end
 
+-- Initialize school of fish
 function ui.initFish()
 
     for i = 1, 10 do
@@ -30,13 +43,15 @@ function ui.initFish()
     end
 end
 
+-- Function to spawn snowflakes
 local function spawnSnowflake()
     table.insert(snowParticles, {
         x = math.random(-100, 600),
         y = -10,
         speedY = math.random(40, 70),
         drift = math.random(30, 60), -- wind drift left/right
-        alpha = 1 -- opacity full
+        alpha = 1, -- opacity full
+        size = math.random(1, 1.75) * 0.75 -- random size
     })
 end
 
@@ -53,6 +68,7 @@ end
 
 
 function ui.update(dt)
+
     -- schoolFish movement
     for _, fish in ipairs(schoolFish) do
         fish.x = fish.x + fish.speed * fish.direction * dt
@@ -65,6 +81,7 @@ function ui.update(dt)
             fish.y = fish.originalY
         end
     end
+
     -- snowflake spawning
     for i = #snowParticles, 1, -1 do
         local p = snowParticles[i]
@@ -79,23 +96,27 @@ function ui.update(dt)
     -- snowflake spawn timer
     ui.snowSpawnTimer = (ui.snowSpawnTimer or 0) - dt
     if ui.snowSpawnTimer <= 0 then
-    spawnSnowflake()
-    ui.snowSpawnTimer = 0.05 -- tweak this for faster/slower snow
-end
-    
-    
+    for i = 1, 2 do  -- spawn 2 flakes per tick
+        spawnSnowflake()
+    end
+    ui.snowSpawnTimer = 0.035  -- speed of snowfall
+    end
+
+    fire.time = fire.time + dt
+    fire.flicker = 1 + 0.15 * math.sin(fire.time * 2)
+
 end
 
 
 function ui.drawBackground()
-    -- Arctic Horizon
-    love.graphics.setColor(0.7, 0.9, 1.0)
+    -- night sky
+    love.graphics.setColor(0.10, 0.15, 0.22)
     love.graphics.rectangle("fill", 0, 0, 600, 50)
 
     -- snowflakes
     for _, p in ipairs(snowParticles) do
         love.graphics.setColor(1, 1, 1, p.alpha)
-        love.graphics.rectangle("fill", p.x, p.y, 2, 2) -- flake size
+        love.graphics.rectangle("fill", p.x, p.y, p.size or 1.3, p.size or 1.3) -- flake size
     end    
 
     -- Water Gradient
@@ -122,9 +143,22 @@ function ui.drawBackground()
     love.graphics.setColor(0, 0, 0)
     love.graphics.ellipse("fill", 300, 52, 9, 3)
 
-    -- Fisherman
+    -- Tent Fire 
+    -- core bright tungsten glow
+    love.graphics.setColor(1.0, 0.7, 0.2, 0.9)
+    love.graphics.circle("fill", fire.x, fire.y, fire.baseRadius * fire.flicker)
+    -- outer soft red-orange halo
+    love.graphics.setColor(1.0, 0.4, 0.1, 0.9)
+    love.graphics.circle("fill", fire.x, fire.y, fire.baseRadius * 2 * fire.flicker)
+    -- white-hot center
+    love.graphics.setColor(1.0, 0.9, 0.6, 0.9)
+    love.graphics.circle("fill", fire.x, fire.y + 5, fire.baseRadius * 0.5 * fire.flicker)
+
+    -- Tent
     love.graphics.setColor(1, 1, 1)
-    love.graphics.rectangle("fill", 285, 17, 30, 30)
+    local scaleX = 43 / tentImage:getWidth()
+    local scaleY = 43 / tentImage:getHeight()
+    love.graphics.draw(tentImage, 279, 6, 0, scaleX, scaleY) 
 end
 
 function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
@@ -221,7 +255,7 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
     -- Zone indicator text
     local zoneName = getCurrentZone()
     love.graphics.setColor(0.2, 0.3, 0.5) 
-    love.graphics.printf("Zone: " .. zoneName, 10, 860, 200, "left")
+    love.graphics.printf(zoneName, 10, 860, 200, "left")
 end
 
 function ui.getDefaultFont()
