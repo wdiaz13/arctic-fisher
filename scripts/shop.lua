@@ -2,6 +2,7 @@
 local gamedata = require("scripts.gamedata")
 local fishing = require("scripts.fishing") -- modify maxdepth
 local sound = require("scripts.sound")
+local ui = require("scripts.ui")
 
 local shop = {}
 
@@ -118,6 +119,8 @@ end
     love.graphics.setFont(love.graphics.newFont(28))
     love.graphics.printf("Trading Post", 150, 100, 300, "center")
     love.graphics.setFont(love.graphics.newFont(14))
+
+    ui.drawMoneyOverlay() -- money display
 end
 
 function shop.mousepressed(x, y, button)

@@ -164,6 +164,7 @@ function fishing.finalizeCatch()
         inventoryPopupTimer = 2
         message = "Inventory Full!"
         state = "waiting"
+        sound.play("inventoryFull")
         biteDepth = nil -- reset bite depth
         return
     end

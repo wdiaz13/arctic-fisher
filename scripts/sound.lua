@@ -19,6 +19,10 @@ function sound.load()
     sources["slippedAway"] = love.audio.newSource("assets/sounds/slipped_away.wav", "static")
     sources["slippedAway"]:setVolume(0.50)
 
+    --inventoryFull
+    sources["inventoryFull"] = love.audio.newSource("assets/sounds/inventory_full.wav", "static")
+    sources["inventoryFull"]:setVolume(0.60)
+
     --lineUpgrade
     sources["lineUpgrade"] = love.audio.newSource("assets/sounds/line_upgrade.wav", "static")
     sources["lineUpgrade"]:setVolume(0.70)
