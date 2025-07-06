@@ -181,21 +181,21 @@ function fishdex.calculateFishValue(name, weight)
     elseif name == "Pink Ice Salmon" then
         return 18.0 + 0.03 * weight
     elseif name == "Brine Sculpin" then
-        return 15.0 + 0.03 * weight
+        return 45.0 + 0.50 * weight
     elseif name == "Crackle Pike" then
-        return 25.0 + 0.03 * weight
+        return 25.0 + 0.20 * weight
     elseif name == "Blind Capelin" then
-        return 6.80 + 0.03 * weight
+        return 6.80 + 0.20 * weight
     elseif name == "Frostjaw Bass" then
-        return 28.0 + 0.03 * weight      
+        return 28.0 + 0.25 * weight      
     elseif name == "Ice Spine Eel" then
-        return 32.0 + 0.03 * weight
+        return 62.0 + 0.53 * weight
     elseif name == "Tundra Snapper" then
-        return 48.0 + 0.03 * weight
+        return 88.0 + 0.53 * weight
     elseif name == "White Gnasher" then
         return 68.0 + 0.03 * weight
     elseif name == "Pallid Sturgeon" then
-        return 58.0 + 0.03 * weight        
+        return 98.0 + 0.93 * weight        
     else
         return 0
     end

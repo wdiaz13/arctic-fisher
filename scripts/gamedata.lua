@@ -21,10 +21,10 @@ local gamedata = {
         minDepth = 5.1,
         maxDepth = 10.1,
         fish = {
-            {name = "Brine Sculpin", chance = 0.25, minWeight = 9.5, maxWeight = 31.5},
+            {name = "Brine Sculpin", chance = 0.15, minWeight = 9.5, maxWeight = 31.5},
             {name = "Crackle Pike", chance = 0.35, minWeight = 6.5, maxWeight = 15.0},
-            {name = "Blind Capelin", chance = 0.2, minWeight = 5.0, maxWeight = 10.0},
-            {name = "Frostjaw Bass", chance = 0.2, minWeight = 9.0, maxWeight = 17.0}
+            {name = "Blind Capelin", chance = 0.25, minWeight = 5.0, maxWeight = 10.0},
+            {name = "Frostjaw Bass", chance = 0.25, minWeight = 9.0, maxWeight = 17.0}
         }
     },
     {
@@ -44,8 +44,8 @@ local gamedata = {
         maxDepth = 2.1,
         fish = {
             {name = "Arctic Char", chance = 0.4, minWeight = 2.3, maxWeight = 4.5},
-            {name = "Capelin", chance = 0.3, minWeight = 6.5, maxWeight = 11.0},
-            {name = "Sunflash Smelt", chance = 0.2, minWeight = 0.2, maxWeight = 1.3},
+            {name = "Capelin", chance = 0.25, minWeight = 6.5, maxWeight = 11.0},
+            {name = "Sunflash Smelt", chance = 0.25, minWeight = 0.2, maxWeight = 1.3},
             {name = "Halibut", chance = 0.1, minWeight = 13.5, maxWeight = 40.0}
         }
     }
