@@ -39,7 +39,7 @@ end
 
 function love.update(dt)
     if not fishdex.isChestOpen() and not shop.isOpen() then
-    fishing.update(dt)
+        fishing.update(dt)
     end
 
     ui.update(dt)
@@ -47,17 +47,17 @@ function love.update(dt)
 
     -- opening tag logic
     if not isOpeningTagDone then
-    openingTagTimer = openingTagTimer - dt
-    if openingTagTimer <= 5 then
-        openingTagAlpha = openingTagTimer / 5  -- fades from 1 → 0
-    end
-    if openingTagTimer <= 0 then
-        isOpeningTagDone = true
-        love.graphics.setFont(love.graphics.newFont(14))
-    end
-    
-    -- snow spawn for opening tag
-    openingSnowSpawnTimer = openingSnowSpawnTimer - dt
+        openingTagTimer = openingTagTimer - dt
+        if openingTagTimer <= 5 then
+            openingTagAlpha = openingTagTimer / 5  -- fades from 1 → 0
+        end
+        if openingTagTimer <= 0 then
+            isOpeningTagDone = true
+            love.graphics.setFont(love.graphics.newFont(14))
+        end
+        
+        -- snow spawn for opening tag
+        openingSnowSpawnTimer = openingSnowSpawnTimer - dt
         if openingSnowSpawnTimer <= 0 then
             table.insert(openingSnow, {
                 x = math.random(-400, 800),
@@ -75,18 +75,110 @@ function love.update(dt)
             p.y = p.y + p.speedY * dt
             if p.y > 900 then table.remove(openingSnow, i) end
         end
-    return  -- block game input/logic during opening tag
+        -- DON'T return here during fade - allow game logic to continue
+        if openingTagTimer > 5 then
+            return  -- only block game input/logic during full opacity phase
+        end
+    else
+        -- Normal game update when opening tag is done
+        if not fishdex.isChestOpen() and not shop.isOpen() then
+            fishing.update(dt)
+        end
+        ui.update(dt)
+        fishdex.update(dt)
     end
 end
 
 function love.draw()
+    -- Handle opening tag (no camera needed here)
+    if not isOpeningTagDone then
+        -- FIRST: Draw the game underneath (during fade phase)
+        if openingTagTimer <= 5 then
+            -- WORLD SPACE: Apply camera translation for game world
+            love.graphics.push()
+            love.graphics.translate(0, -require("scripts.gamedata").cameraY)
+            
+            -- Draw all world elements that should move with camera
+            ui.drawBackground()
+            fishing.draw()
+            
+            love.graphics.pop()
+            -- END WORLD SPACE
+            
+            -- SCREEN SPACE: Draw UI elements that should stay fixed
+            ui.drawOverlay(
+                fishing.getDepth(),
+                fishing.getMessage(),
+                fishing.getMoney(),
+                fishing.isInventoryFull(),
+                fishing.getCaughtFish()
+            )
+        end
+        
+        -- THEN: Draw opening tag overlay on top
+        -- Fade background
+        love.graphics.setColor(0, 0, 0, openingTagAlpha)
+        love.graphics.rectangle("fill", 0, 0, 600, 900)
+
+        -- Draw snow
+        for _, p in ipairs(openingSnow) do
+            love.graphics.setColor(1, 1, 1, openingTagAlpha)
+            love.graphics.rectangle("fill", p.x, p.y, p.size, p.size)
+        end
+
+        -- Draw title text
+        local defaultFont = ui.getDefaultFont()
+        love.graphics.setFont(defaultFont)
+
+        local y = 430
+        local alpha = openingTagAlpha
+
+        local part1 = "Deep under the Arctic crust, the "
+        local part2 = "old world"
+        local part3 = " stirs."
+
+        local totalWidth = defaultFont:getWidth(part1) + ancientFont:getWidth(part2) + defaultFont:getWidth(part3)
+        local x = (600 - totalWidth) / 2
+
+        -- part1
+        love.graphics.setColor(1, 1, 1, alpha)
+        love.graphics.setFont(defaultFont)
+        love.graphics.print(part1, x, y)
+
+        -- part2 (light blue, ancient font)
+        x = x + defaultFont:getWidth(part1)
+        love.graphics.setFont(ancientFont)
+        love.graphics.setColor(0.8, 0.9, 1.0, alpha)
+        love.graphics.print(part2, x, y)
+
+        -- part3
+        x = x + ancientFont:getWidth(part2)
+        love.graphics.setFont(defaultFont)
+        love.graphics.setColor(1, 1, 1, alpha)
+        love.graphics.print(part3, x, y)
+        return
+    end
+
+    -- Main game drawing with proper camera isolation
     if fishdex.isChestOpen() then
+        -- Draw chest WITHOUT camera translation
         fishdex.drawChest()
     elseif shop.isOpen() then
+        -- Draw shop WITHOUT camera translation
         shop.draw()
     else
+        -- WORLD SPACE: Apply camera translation for game world
+        love.graphics.push()
+        love.graphics.translate(0, -require("scripts.gamedata").cameraY)
+        
+        -- Draw all world elements that should move with camera
         ui.drawBackground()
-        fishing.draw() -- optional, in case you add fishing-specific drawing
+        fishing.draw()
+        
+        love.graphics.pop()
+        -- END WORLD SPACE
+        
+        -- SCREEN SPACE: Draw UI elements that should stay fixed
         ui.drawOverlay(
             fishing.getDepth(),
             fishing.getMessage(),
@@ -95,55 +187,6 @@ function love.draw()
             fishing.getCaughtFish()
         )
     end
-
-    -- draw opening tag 
-    if not isOpeningTagDone then
-
-    -- Fade background
-    love.graphics.setColor(0, 0, 0, openingTagAlpha)
-    love.graphics.rectangle("fill", 0, 0, 600, 900)
-
-    -- Draw snow
-    for _, p in ipairs(openingSnow) do
-        love.graphics.setColor(1, 1, 1, openingTagAlpha)
-        love.graphics.rectangle("fill", p.x, p.y, p.size, p.size)
-    end
-
-
-    -- Draw title text
-    local defaultFont = ui.getDefaultFont()
-    love.graphics.setFont(defaultFont)
-
-    local y = 430
-    local alpha = openingTagAlpha
-
-    local part1 = "Deep under the Arctic crust, the "
-    local part2 = "old world"
-    local part3 = " stirs."
-
-    local totalWidth = defaultFont:getWidth(part1) + ancientFont:getWidth(part2) + defaultFont:getWidth(part3)
-    local x = (600 - totalWidth) / 2
-
-    -- part1
-    love.graphics.setColor(1, 1, 1, alpha)
-    love.graphics.setFont(defaultFont)
-    love.graphics.print(part1, x, y)
-
-    -- part2 (light blue, ancient font)
-    x = x + defaultFont:getWidth(part1)
-    love.graphics.setFont(ancientFont)
-    love.graphics.setColor(0.8, 0.9, 1.0, alpha)
-    love.graphics.print(part2, x, y)
-
-    -- part3
-    x = x + ancientFont:getWidth(part2)
-    love.graphics.setFont(defaultFont)
-    love.graphics.setColor(1, 1, 1, alpha)
-    love.graphics.print(part3, x, y)
-
-
-    return
-end
 end
 
 function love.mousepressed(x, y, button)

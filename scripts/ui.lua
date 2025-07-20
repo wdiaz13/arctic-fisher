@@ -29,7 +29,6 @@ end
 
 -- Initialize school of fish
 function ui.initFish()
-
     for i = 1, 10 do
         local yPos = math.random(250, 750) -- random y position for each fish
         table.insert(schoolFish, {
@@ -66,9 +65,7 @@ local function getCurrentZone()
     return "Unknown Zone"
 end
 
-
 function ui.update(dt)
-
     -- schoolFish movement
     for _, fish in ipairs(schoolFish) do
         fish.x = fish.x + fish.speed * fish.direction * dt
@@ -96,10 +93,10 @@ function ui.update(dt)
     -- snowflake spawn timer
     ui.snowSpawnTimer = (ui.snowSpawnTimer or 0) - dt
     if ui.snowSpawnTimer <= 0 then
-    for i = 1, 2 do  -- spawn 2 flakes per tick
-        spawnSnowflake()
-    end
-    ui.snowSpawnTimer = 0.035  -- speed of snowfall
+        for i = 1, 2 do  -- spawn 2 flakes per tick
+            spawnSnowflake()
+        end
+        ui.snowSpawnTimer = 0.035  -- speed of snowfall
     end
 
     fire.time = fire.time + dt
@@ -112,46 +109,54 @@ function ui.update(dt)
     else
         gamedata.displayedMoney = gamedata.money
     end
-
 end
 
-
+-- WORLD SPACE: Elements that move with camera
 function ui.drawBackground()
-    -- night sky
+    -- night sky (extends far above for camera scrolling)
     love.graphics.setColor(0.10, 0.15, 0.22)
-    love.graphics.rectangle("fill", 0, 0, 600, 50)
+    love.graphics.rectangle("fill", 0, -2000, 600, 2050) -- extended upward for camera
 
-    -- snowflakes
+    -- snowflakes (world space - will scroll with camera)
     for _, p in ipairs(snowParticles) do
         love.graphics.setColor(1, 1, 1, p.alpha)
-        love.graphics.rectangle("fill", p.x, p.y, p.size or 1.3, p.size or 1.3) -- flake size
+        love.graphics.rectangle("fill", p.x, p.y, p.size or 1.3, p.size or 1.3)
     end    
 
-    -- Water Gradient
-    for y = 50, 900 do
-        local t = (y - 50) / (900 - 50)
+    -- Water Gradient (extends deep for camera scrolling) - FASTER GRADIENT TO ALMOST BLACK
+    local waterStartY = 50
+    local waterEndY = 5000 -- much deeper for camera scrolling
+    local pixelsPerMeter = 170 -- same as fishing module
+    for y = waterStartY, waterEndY, 2 do -- step by 2 for performance
+        -- Calculate depth in meters for gradient
+        local depthInMeters = (y - waterStartY) / pixelsPerMeter
+        local maxDepthForGradient = 5.0 -- gradient completes by 5m depth (much faster)
+        local t = math.min(depthInMeters / maxDepthForGradient, 1.0)
+        
+        -- Gradient from blue (0.0, 0.1, 0.3) to almost black (0.0, 0.02, 0.08)
         local r = 0.0
-        local g = 0.2 * (1 - t)
-        local b = 0.4 * (1 - t)
+        local g = 0.1 * (1 - t * 0.8) -- from 0.1 to 0.02
+        local b = 0.3 * (1 - t * 0.73) -- from 0.3 to 0.08
+        
         love.graphics.setColor(r, g, b)
-        love.graphics.rectangle("fill", 0, y, 600, 1)
+        love.graphics.rectangle("fill", 0, y, 600, 2)
     end
 
+    -- School fish (world space - will scroll with camera)
     for _, fish in ipairs(schoolFish) do
         love.graphics.setColor(fish.color)
         love.graphics.rectangle("fill", fish.x, fish.y, 5, 2)
     end    
-     
 
-    -- Ice
+    -- Ice layer (world space - will scroll out of view)
     love.graphics.setColor(0.7, 0.7, 0.7)
     love.graphics.rectangle("fill", 0, 47, 600, 8)
 
-    -- Fishing Hole
+    -- Fishing Hole (world space)
     love.graphics.setColor(0, 0, 0)
     love.graphics.ellipse("fill", 300, 52, 9, 3)
 
-    -- Tent Fire 
+    -- Tent Fire (world space - will scroll out of view)
     -- core bright tungsten glow
     love.graphics.setColor(1.0, 0.7, 0.2, 0.9)
     love.graphics.circle("fill", fire.x, fire.y, fire.baseRadius * fire.flicker)
@@ -162,21 +167,19 @@ function ui.drawBackground()
     love.graphics.setColor(1.0, 0.9, 0.6, 0.9)
     love.graphics.circle("fill", fire.x, fire.y + 5, fire.baseRadius * 0.5 * fire.flicker)
 
-    -- Tent
+    -- Tent (world space - will scroll out of view)
     love.graphics.setColor(1, 1, 1)
     local scaleX = 43 / tentImage:getWidth()
     local scaleY = 43 / tentImage:getHeight()
-    love.graphics.draw(tentImage, 279, 6, 0, scaleX, scaleY) 
-end
+    love.graphics.draw(tentImage, 279, 6, 0, scaleX, scaleY)
 
-function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
-    -- Fishing Line
+    -- Fishing Line (world space - moves with camera)
     local lineLength = (gamedata.depth / 1.0) * 170
     love.graphics.setColor(1, 1, 1)
     love.graphics.setLineWidth(1)
     love.graphics.line(300, 50, 300, 50 + lineLength)
 
-    -- Ripple Effect (if in bite state)
+    -- Ripple Effect (world space - if in bite state)
     if gamedata.state == "bite" then
         local centerX = 300
         local centerY = 50 + lineLength
@@ -189,8 +192,11 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
         love.graphics.setLineWidth(1)
         love.graphics.circle("line", centerX, centerY, rippleRadius)
     end
+end
 
-    -- Depth Text
+-- SCREEN SPACE: HUD elements that stay fixed regardless of camera
+function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
+    -- Depth Text (screen space - always visible)
     local depthX = 10
     local depthY = 30
 
@@ -214,42 +220,42 @@ function ui.drawOverlay(depth, message, money, inventoryFull, caughtFish)
     -- Reset color
     love.graphics.setColor(1, 1, 1)
 
-    -- Message
+    -- Message (screen space - always at bottom)
     love.graphics.printf(message, 0, 860, 600, "center")
 
-    -- Catch Text
+    -- Catch Text (screen space)
     if caughtFish then
         love.graphics.printf(caughtFish, 0, 800, 600, "center")
     end
 
-    -- Inventory Full Warning
+    -- Inventory Full Warning (screen space)
     if inventoryFull then
         love.graphics.setColor(1, 0, 0)
         love.graphics.printf("Inventory Full!", 0, 400, 600, "center")
     end
 
-    -- Icebox Shortcut
+    -- Icebox Shortcut (screen space)
     love.graphics.setColor(0, 0, 0.1)
     love.graphics.print("'I' open Icebox", 491, 11)
     love.graphics.setColor(1, 1, 1)
     love.graphics.print("'I' open Icebox", 490, 10)
 
-    -- Trading Post Shortcut
+    -- Trading Post Shortcut (screen space)
     love.graphics.setColor(0, 0, 0.1)
     love.graphics.print("'P' open Trading Post", 447, 31)
     love.graphics.setColor(1, 1, 1)
     love.graphics.print("'P' open Trading Post", 446, 30)
 
-    -- Zone indicator text
+    -- Zone indicator text (screen space)
     local zoneName = getCurrentZone()
     love.graphics.setColor(0.2, 0.3, 0.5) 
     love.graphics.printf(zoneName, 10, 860, 200, "left")
 
-    ui.drawMoneyOverlay() -- draw money (always on screen)
-
+    -- Money overlay (screen space - always visible)
+    ui.drawMoneyOverlay()
 end
 
--- Money overlay in the top left corner
+-- Money overlay in the top left corner (screen space)
 function ui.drawMoneyOverlay()
     local money = gamedata.displayedMoney or 0
 
@@ -258,9 +264,7 @@ function ui.drawMoneyOverlay()
 
     love.graphics.setColor(1.0, 0.75, 0.0)
     love.graphics.print(string.format("$%.2f", money), 10, 10)
-
 end
-
 
 function ui.getDefaultFont()
     return defaultFont

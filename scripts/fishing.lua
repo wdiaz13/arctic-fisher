@@ -12,6 +12,9 @@ local depth = 0
 local maxDepth = 1.0
 local dropSpeed = 0.2
 local reelSpeed = 0.2
+local pixelsPerMeter = 170
+local lineAnchorY = 700 -- where bottom of the line always appears past 3m
+local cameraStartDepth = 3.0 -- depth at which camera starts following
 
 -- Timers
 local biteTimer = 0
@@ -61,7 +64,8 @@ function fishing.update(dt)
         fishing.startWaiting()
     elseif state == "waiting" then
         biteTimer = biteTimer - dt
-        if biteTimer <= 0 and gamedata.depth > 0.5 then
+        -- ONLY allow bites during waiting state AND when not moving the line
+        if biteTimer <= 0 and gamedata.depth > 0.5 and not isHoldingDrop and not isHoldingReel then
             state = "bite"
             fishOnTimer = 2
             rippleTimer = 0
@@ -103,14 +107,30 @@ function fishing.update(dt)
             depthShakeTimer = 0
         end
     end
+
+    -- Update global state
     gamedata.state = state
     gamedata.rippleTimer = rippleTimer
     gamedata.depthShakeTimer = depthShakeTimer
     gamedata.depthShakeStrength = depthShakeStrength
+
+    -- CAMERA LOGIC: Follow the line end after cameraStartDepth
+    if gamedata.depth > cameraStartDepth then
+        -- Camera follows to keep the line end visible
+        -- When depth > 3m, move camera so surface stays at top of screen
+        local excessDepth = gamedata.depth - cameraStartDepth
+        gamedata.cameraY = excessDepth * pixelsPerMeter
+    else
+        -- Smoothly reset camera when shallow
+        local resetSpeed = 400 -- pixels per second
+        if gamedata.cameraY > 0 then
+            gamedata.cameraY = math.max(gamedata.cameraY - resetSpeed * dt, 0)
+        end
+    end
 end
 
 function fishing.draw()
-    -- draw fishing elements if needed, moved to UI module
+    -- fishing drawing now handled in ui.drawBackground() for proper camera isolation
 end
 
 function fishing.mousepressed(x, y, button)
@@ -210,7 +230,6 @@ function fishing.finalizeCatch()
     message = "You caught something!"
     state = "caught"
 end
-
 
 -- Getter functions for UI
 function fishing.getDepth()

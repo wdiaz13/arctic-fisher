@@ -4,6 +4,8 @@ local gamedata = {
     displayedMoney = 0,
     iceChest = {},
     depth = 0,
+    cameraY = 0,
+
     fishPools = {
     {
         name = "Pressure Reef",
