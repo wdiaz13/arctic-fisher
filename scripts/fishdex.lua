@@ -167,19 +167,19 @@ end
 
 function fishdex.calculateFishValue(name, weight)
     if name == "Arctic Char" then
-        return 200.20 + 0.01 * weight
+        return 2.20 + 0.05 * weight
     elseif name == "Capelin" then
-        return 300.40 + 0.01 * weight
+        return 3.40 + 0.05 * weight
     elseif name == "Sunflash Smelt" then
-        return 100.80 + 0.01 * weight
-    elseif name == "Polar Cod" then
-        return 4.20 + 0.01 * weight
+        return 1.80 + 0.03 * weight
     elseif name == "Halibut" then
-        return 9.50 + 0.01 * weight
+        return 9.50 + 0.25 * weight
+    elseif name == "Polar Cod" then
+        return 4.20 + 0.25 * weight
     elseif name == "Icefang Haddock" then
-        return 16.5 + 0.02 * weight
+        return 16.5 + 0.25 * weight
     elseif name == "Pink Ice Salmon" then
-        return 18.0 + 0.03 * weight
+        return 18.0 + 0.25 * weight
     elseif name == "Brine Sculpin" then
         return 45.0 + 0.50 * weight
     elseif name == "Crackle Pike" then
@@ -187,15 +187,15 @@ function fishdex.calculateFishValue(name, weight)
     elseif name == "Blind Capelin" then
         return 6.80 + 0.20 * weight
     elseif name == "Frostjaw Bass" then
-        return 28.0 + 0.25 * weight      
+        return 48.0 + 0.55 * weight      
     elseif name == "Ice Spine Eel" then
-        return 62.0 + 0.53 * weight
+        return 160.0 + 0.50 * weight
     elseif name == "Tundra Snapper" then
-        return 88.0 + 0.53 * weight
+        return 88.0 + 0.50 * weight
     elseif name == "White Gnasher" then
-        return 68.0 + 0.03 * weight
+        return 69.0 + 0.50 * weight
     elseif name == "Pallid Sturgeon" then
-        return 98.0 + 0.93 * weight        
+        return 99.0 + 0.99 * weight        
     else
         return 0
     end

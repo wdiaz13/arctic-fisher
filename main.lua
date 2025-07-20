@@ -38,13 +38,6 @@ function love.load()
 end
 
 function love.update(dt)
-    if not fishdex.isChestOpen() and not shop.isOpen() then
-        fishing.update(dt)
-    end
-
-    ui.update(dt)
-    fishdex.update(dt)
-
     -- opening tag logic
     if not isOpeningTagDone then
         openingTagTimer = openingTagTimer - dt
@@ -75,12 +68,22 @@ function love.update(dt)
             p.y = p.y + p.speedY * dt
             if p.y > 900 then table.remove(openingSnow, i) end
         end
-        -- DON'T return here during fade - allow game logic to continue
+        
+        -- FIXED: Only allow game logic during fade phase, and don't duplicate it
+        if openingTagTimer <= 5 then
+            -- Game update logic during fade phase
+            if not fishdex.isChestOpen() and not shop.isOpen() then
+                fishing.update(dt)
+            end
+            ui.update(dt)
+            fishdex.update(dt)
+        end
+        -- Block game input/logic during full opacity phase
         if openingTagTimer > 5 then
-            return  -- only block game input/logic during full opacity phase
+            return
         end
     else
-        -- Normal game update when opening tag is done
+        -- Normal game update when opening tag is completely done
         if not fishdex.isChestOpen() and not shop.isOpen() then
             fishing.update(dt)
         end
@@ -90,7 +93,7 @@ function love.update(dt)
 end
 
 function love.draw()
-    -- Handle opening tag (no camera needed here)
+    -- Handle opening tag 
     if not isOpeningTagDone then
         -- FIRST: Draw the game underneath (during fade phase)
         if openingTagTimer <= 5 then
@@ -115,7 +118,7 @@ function love.draw()
             )
         end
         
-        -- THEN: Draw opening tag overlay on top
+        -- Draw opening tag overlay on top
         -- Fade background
         love.graphics.setColor(0, 0, 0, openingTagAlpha)
         love.graphics.rectangle("fill", 0, 0, 600, 900)
@@ -161,10 +164,10 @@ function love.draw()
 
     -- Main game drawing with proper camera isolation
     if fishdex.isChestOpen() then
-        -- Draw chest WITHOUT camera translation
+        -- Draw chest 
         fishdex.drawChest()
     elseif shop.isOpen() then
-        -- Draw shop WITHOUT camera translation
+        -- Draw shop 
         shop.draw()
     else
         -- WORLD SPACE: Apply camera translation for game world

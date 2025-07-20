@@ -5,6 +5,7 @@ local ui = {}
 
 local schoolFish = {}
 local snowParticles = {}
+local deepCoral = {} -- Add coral system
 
 local defaultFont
 local signFont
@@ -29,15 +30,51 @@ end
 
 -- Initialize school of fish
 function ui.initFish()
-    for i = 1, 10 do
-        local yPos = math.random(250, 750) -- random y position for each fish
+    -- Surface fish (smaller, lighter) - extend down to 7m
+    for i = 1, 15 do -- increased from 10
+        local yPos = math.random(250, 1240) -- up to 7m depth (50 + 7*170 = 1240)
         table.insert(schoolFish, {
-            x = math.random(-100, 600),-- random x position
-            y = yPos, -- random y position
-            originalY = yPos, -- store original y position for depth
-            speed = math.random(20, 40), -- random speed
-            direction = math.random(0, 1) == 0 and -1 or 1, -- random direction
-            color = (math.random() < 0.1) and {.5, 0.2, 0.2} or {0.2, 0.3, 0.4}
+            x = math.random(-100, 600),
+            y = yPos,
+            originalY = yPos,
+            speed = math.random(15, 25), -- SLOWER: was 20-40, now 15-25
+            direction = math.random(0, 1) == 0 and -1 or 1,
+            color = (math.random() < 0.1) and {.5, 0.2, 0.2} or {0.2, 0.3, 0.4},
+            fishType = "surface",
+            width = 5,
+            height = 2
+        })
+    end
+    
+    -- Deep water fish (smaller, more numerous, 9-15m depth)
+    for i = 1, 12 do -- increased from 6
+        local yPos = math.random(1580, 2600) -- 9m to 15m depth (50 + 9*170 = 1580, 50 + 15*170 = 2600)
+        table.insert(schoolFish, {
+            x = math.random(-100, 600),
+            y = yPos,
+            originalY = yPos,
+            speed = math.random(8, 18),
+            direction = math.random(0, 1) == 0 and -1 or 1,
+            color = (math.random() < 0.3) and {0.4, 0.1, 0.1} or {0.1, 0.15, 0.35}, -- 30% red, 70% dark blue
+            fishType = "deep",
+            width = 5, -- same size as surface fish
+            height = 2  -- same size as surface fish
+        })
+    end
+    
+    -- Initialize deep coral (10-15m depth, static on sides) - DENSE EDGE COVERAGE
+    for i = 1, 100 do -- increased to 100 for very dense coverage
+        local side = math.random() < 0.5 and "left" or "right"
+        local x = side == "left" and math.random(-40, 80) or math.random(520, 640) -- focused on edges
+        local y = math.random(1750, 2600) -- 10m to 15m depth
+        table.insert(deepCoral, {
+            x = x,
+            y = y,
+            width = math.random(4, 18), -- smaller, more interconnected pieces
+            height = math.random(20, 60), -- taller for better vertical coverage
+            branches = math.random(4, 12), -- many branches for interconnection
+            color = {0.12 + math.random() * 0.15, 0.03 + math.random() * 0.07, 0.2 + math.random() * 0.15}, -- more purple variation
+            opacity = 0.2 + math.random() * 0.5 -- wider opacity range for layering effect
         })
     end
 end
@@ -142,10 +179,38 @@ function ui.drawBackground()
         love.graphics.rectangle("fill", 0, y, 600, 2)
     end
 
+    -- Deep coral (world space - static on sides, 10-15m depth)
+    for _, coral in ipairs(deepCoral) do
+        love.graphics.setColor(coral.color[1], coral.color[2], coral.color[3], coral.opacity)
+        
+        -- Draw main coral trunk
+        love.graphics.rectangle("fill", coral.x, coral.y, coral.width * 0.3, coral.height)
+        
+        -- Draw coral branches
+        for j = 1, coral.branches do
+            local branchY = coral.y + (j / coral.branches) * coral.height * 0.8
+            local branchLength = coral.width * (0.5 + math.random() * 0.5)
+            local branchAngle = (j % 2 == 0) and -1 or 1
+            
+            -- Left/right branches
+            love.graphics.rectangle("fill", 
+                coral.x + coral.width * 0.15, 
+                branchY, 
+                branchLength * branchAngle, 
+                2)
+        end
+    end
+
     -- School fish (world space - will scroll with camera)
     for _, fish in ipairs(schoolFish) do
         love.graphics.setColor(fish.color)
-        love.graphics.rectangle("fill", fish.x, fish.y, 5, 2)
+        if fish.fishType == "deep" then
+            -- Draw deep fish (same size as surface now)
+            love.graphics.rectangle("fill", fish.x, fish.y, fish.width, fish.height)
+        else
+            -- Draw regular surface fish
+            love.graphics.rectangle("fill", fish.x, fish.y, fish.width or 5, fish.height or 2)
+        end
     end    
 
     -- Ice layer (world space - will scroll out of view)
